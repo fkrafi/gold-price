@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gold Price Tracker - Track current gold prices and market trends">
+    <title>Gold Price Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .gold-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .price-card {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .price-label {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .price-value {
+            color: #fff;
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-section {
+            margin-top: 30px;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .info-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            color: #999;
+        }
+
+        .github-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .github-link:hover {
+            background: #555;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .price-value {
+                font-size: 2rem;
+            }
+
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="gold-icon">🏆</div>
+            <h1>Gold Price Tracker</h1>
+            <p class="subtitle">Stay updated with current gold market prices</p>
+        </header>
+
+        <div class="price-card">
+            <div class="price-label">Current Gold Price</div>
+            <div class="price-value">$2,050/oz</div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-card">
+                <h3>📊 About Gold Prices</h3>
+                <p>Gold prices fluctuate based on various economic factors including inflation, currency values, central bank policies, and geopolitical events. The price shown is a reference value in USD per troy ounce.</p>
+            </div>
+
+            <div class="info-card">
+                <h3>💡 Why Track Gold?</h3>
+                <p>Gold is considered a safe-haven asset and a hedge against inflation. Investors and traders monitor gold prices to make informed decisions about portfolio diversification and risk management.</p>
+            </div>
+
+            <div class="info-card">
+                <h3>📈 Market Insights</h3>
+                <p>Gold trading occurs 24/7 in global markets. Major factors affecting prices include Federal Reserve decisions, global economic growth, and demand from jewelry and industrial sectors.</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>Gold Price Tracker Project</p>
+            <a href="https://github.com/fkrafi/gold-price" class="github-link" target="_blank">View on GitHub</a>
+        </footer>
+    </div>
+</body>
+</html>
