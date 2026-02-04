@@ -32,13 +32,7 @@ jobs:
         run: |
           python fetch_gold_price.py
       
-      - name: Check for changes
-        id: check_changes
-        run: |
-          git diff --exit-code gold_price_data.json || echo "changes=true" >> $GITHUB_OUTPUT
-      
       - name: Commit and push changes
-        if: steps.check_changes.outputs.changes == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
