@@ -1,9 +1,9 @@
 {
-  "last_updated": "2026-02-04T14:01:21.949845",
+  "last_updated": "2026-02-04T18:09:59.733683",
   "gold_data": {
-    "timestamp": "2026-02-04T14:01:21.949836",
+    "timestamp": "2026-02-04T18:09:59.733639",
     "gold_price_usd": 0.0,
     "source": "mock_data",
-    "error": "HTTPSConnectionPool(host='api.metals.live', port=443): Max retries exceeded with url: /v1/spot/gold (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7f62c2731be0>: Failed to resolve 'api.metals.live' ([Errno -5] No address associated with hostname)\"))"
+    "error": "HTTPSConnectionPool(host='api.metals.live', port=443): Max retries exceeded with url: /v1/spot/gold (Caused by SSLError(SSLError(1, '[SSL: TLSV1_UNRECOGNIZED_NAME] tlsv1 unrecognized name (_ssl.c:1081)')))"
   }
 }
