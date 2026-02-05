@@ -1,6 +1,6 @@
 (function () {
   const DEFAULTS = {
-    todayUrl: "api/2026-02-04.json",
+    todayUrl: `api/${new Date().toISOString().slice(0, 10)}.json`,
     historyUrl: "api/history.json",
   };
 
