@@ -22,7 +22,45 @@
     }).format(num);
   }
 
-  function render(container, today, prev, dateLabel) {
+  function showHistoryModal(historyData) {
+    const modal = document.createElement('div');
+    modal.id = 'history-modal';
+    modal.innerHTML = `
+      <div class="modal-overlay">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Price History</h2>
+            <button class="close-btn" onclick="document.getElementById('history-modal').remove()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>24K</th>
+                  <th>22K</th>
+                  <th>18K</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${historyData.map(item => `
+                  <tr>
+                    <td>${item.date}</td>
+                    <td>${format(item.gold_24kt)}</td>
+                    <td>${format(item.gold_22kt)}</td>
+                    <td>${format(item.gold_18kt)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  function render(container, today, prev, dateLabel, allHistory) {
     function delta(curr, prevVal) {
       if (curr == null || prevVal == null) return null;
       const d = parseFloat(curr) - parseFloat(prevVal);
@@ -33,6 +71,7 @@
     container.innerHTML = `
       <div class="header">
         <div class="badge"><span class="dot"></span> ${dateLabel}</div>
+        <button class="history-btn" id="show-history-btn">View History</button>
       </div>
       <div class="grid">
         <div class="panel">
@@ -52,8 +91,13 @@
           <div class="delta">${prev ? `Δ ${delta(today.gold_18kt, prev.gold_18kt)}` : ""}</div>
         </div>
       </div>
-      
     `;
+
+    // Add event listener to the button
+    const btn = container.querySelector('#show-history-btn');
+    if (btn) {
+      btn.addEventListener('click', () => showHistoryModal(allHistory));
+    }
   }
 
   async function mount(target, opts = {}) {
@@ -79,7 +123,7 @@
       const prev = sortedHistory.length > 1 ? sortedHistory[1] : null;
       const dateLabel = today.date;
 
-      render(el, today, prev, dateLabel);
+      render(el, today, prev, dateLabel, sortedHistory);
     } catch (err) {
       const dateLabel = new Date().toISOString().slice(0, 10);
       el.innerHTML = `
