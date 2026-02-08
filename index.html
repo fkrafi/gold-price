@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0a0a0a;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -22,36 +22,37 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 1200px;
             width: 100%;
         }
 
         #widget {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 32px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            border: 1px solid #2a2a2a;
+            padding: 24px;
         }
 
         .header {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
         .badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: #f0f0f0;
+            background: #2a2a2a;
             padding: 8px 16px;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
-            color: #333;
+            color: #a0a0a0;
         }
 
         .dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             background: #10b981;
             border-radius: 50%;
             animation: pulse 2s infinite;
@@ -68,50 +69,60 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 16px;
         }
 
         .panel {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            border-radius: 12px;
-            color: white;
+            background: #222;
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
             text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .panel:hover {
+            border-color: #3a3a3a;
+            transform: translateY(-2px);
         }
 
         .panel h3 {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             margin-bottom: 12px;
-            opacity: 0.9;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .price {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
             margin-bottom: 8px;
+            color: #fff;
             line-height: 1.2;
         }
 
         .delta {
             font-size: 14px;
-            opacity: 0.8;
             font-weight: 500;
+            color: #10b981;
         }
 
-        h1 {
-            text-align: center;
-            color: white;
-            margin-bottom: 24px;
-            font-size: 32px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        .delta:empty {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🪙 Gold Price Today</h1>
         <div id="widget" data-source-history="api/history.json"></div>
     </div>
 
