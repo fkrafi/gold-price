@@ -1,154 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Gold Price Widget</title>
-		<style>
-			:root {
-				color-scheme: light dark;
-				--bg: #0f1218;
-				--card: #151a23;
-				--text: #e7edf5;
-				--muted: #9aa7b8;
-				--accent: #f5c542;
-				--accent-weak: #ffe89a;
-				--border: #2a3240;
-			}
-
-			* {
-				box-sizing: border-box;
-			}
-
-			body {
-				margin: 0;
-				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-					Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans",
-					"Helvetica Neue", Arial, sans-serif;
-				background: var(--bg);
-				color: var(--text);
-				display: grid;
-				place-items: center;
-				min-height: 100vh;
-				padding: 24px;
-			}
-
-			.container {
-				width: 100%;
-				max-width: 720px;
-			}
-
-			.title {
-				margin: 0 0 16px;
-				font-weight: 700;
-				letter-spacing: 0.2px;
-			}
-
-			.widget-card {
-				background: var(--card);
-				border: 1px solid var(--border);
-				border-radius: 16px;
-				padding: 18px;
-				box-shadow:
-					0 10px 30px rgba(0, 0, 0, 0.25),
-					inset 0 1px 0 rgba(255, 255, 255, 0.02);
-			}
-
-			.header {
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				gap: 12px;
-				margin-bottom: 12px;
-			}
-
-			.badge {
-				display: inline-flex;
-				align-items: center;
-				gap: 8px;
-				font-size: 14px;
-				color: var(--muted);
-			}
-
-			.dot {
-				width: 10px;
-				height: 10px;
-				border-radius: 50%;
-				background: var(--accent);
-				box-shadow: 0 0 0 3px rgba(245, 197, 66, 0.15), 0 0 10px var(--accent);
-			}
-
-			.grid {
-				display: grid;
-				grid-template-columns: repeat(3, 1fr);
-				gap: 12px;
-			}
-
-			.panel {
-				border: 1px solid var(--border);
-				border-radius: 12px;
-				padding: 12px;
-				background: rgba(21, 26, 35, 0.6);
-			}
-
-			.panel h3 {
-				margin: 0 0 8px;
-				font-size: 14px;
-				font-weight: 600;
-				color: var(--muted);
-			}
-
-			.price {
-				margin: 0;
-				font-size: 24px;
-				font-weight: 700;
-				letter-spacing: 0.2px;
-			}
-
-			.delta {
-				margin-top: 6px;
-				font-size: 13px;
-				color: var(--muted);
-			}
-
-			.footer {
-				margin-top: 12px;
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				gap: 8px;
-				font-size: 13px;
-				color: var(--muted);
-			}
-
-			.source {
-				display: inline-flex;
-				gap: 6px;
-				align-items: center;
-			}
-
-			.accent {
-				color: var(--accent-weak);
-			}
-		</style>
-	</head>
-	<body>
-		<div class="container">
-			<h1 class="title">Gold Price Widget</h1>
-			<div
-				id="gold-price-widget"
-				class="widget-card"
-				data-source-today="api/2026-02-04.json"
-				data-source-history="api/history.json"
-			>
-				<!-- Populated by widget.js -->
-			</div>
-		</div>
-
-		<script src="widget.js"></script>
-		<script>
-			// Mount the widget into the element above
-			window.GoldPriceWidget && window.GoldPriceWidget.mount("#gold-price-widget");
-		</script>
-	</body>
-	</html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Price</title>
+</head>
+<body>
+    <div>
+        <h1>Gold Price</h1>
+        <div>
+            <div class="price">
+                <!-- Original line with data-source history -->
+                <div data-source-history="api/history.json">
+                    <!-- More content -->
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
