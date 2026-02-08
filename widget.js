@@ -1,6 +1,5 @@
 (function () {
   const DEFAULTS = {
-    todayUrl: `api/${new Date().toISOString().slice(0, 10)}.json`,
     historyUrl: "api/history.json",
   };
 
@@ -23,13 +22,7 @@
     }).format(num);
   }
 
-  function render(container, data, history, meta) {
-    const { dateLabel } = meta;
-    const today = data || {};
-
-    const historyEntry = history && history[dateLabel];
-    const prev = historyEntry ? historyEntry : null;
-
+  function render(container, today, prev, dateLabel) {
     function delta(curr, prevVal) {
       if (curr == null || prevVal == null) return null;
       const d = parseFloat(curr) - parseFloat(prevVal);
@@ -67,22 +60,28 @@
     const el = typeof target === "string" ? document.querySelector(target) : target;
     if (!el) throw new Error("GoldPriceWidget: target not found");
 
-    const todayUrl = el.getAttribute("data-source-today") || opts.todayUrl || DEFAULTS.todayUrl;
     const historyUrl = el.getAttribute("data-source-history") || opts.historyUrl || DEFAULTS.historyUrl;
 
-    // (removed updatedAt display to simplify UI)
-
-    // Try to infer date label from todayUrl filename (YYYY-MM-DD.json)
-    const match = todayUrl.match(/(\d{4}-\d{2}-\d{2})\.json$/);
-    const dateLabel = match ? match[1] : new Date().toISOString().slice(0, 10);
-
     try {
-      const [todayData, historyData] = await Promise.all([
-        fetchJson(todayUrl).catch(() => ({})),
-        fetchJson(historyUrl).catch(() => ({})),
-      ]);
-      render(el, todayData, historyData, { dateLabel, todayUrl, historyUrl });
+      const historyData = await fetchJson(historyUrl);
+      
+      // Convert history object to array and sort by date descending
+      const sortedHistory = Object.entries(historyData)
+        .map(([date, data]) => ({ date, ...data }))
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      if (sortedHistory.length === 0) {
+        throw new Error("No data available in history");
+      }
+
+      // First item is latest, second is previous day
+      const today = sortedHistory[0];
+      const prev = sortedHistory.length > 1 ? sortedHistory[1] : null;
+      const dateLabel = today.date;
+
+      render(el, today, prev, dateLabel);
     } catch (err) {
+      const dateLabel = new Date().toISOString().slice(0, 10);
       el.innerHTML = `
         <div class="header">
           <div class="badge"><span class="dot"></span> ${dateLabel}</div>
