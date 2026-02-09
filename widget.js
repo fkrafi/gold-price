@@ -58,6 +58,13 @@
       </div>
     `;
     document.body.appendChild(modal);
+
+    // Close modal when clicking on overlay
+    modal.querySelector('.modal-overlay').addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-overlay')) {
+        modal.remove();
+      }
+    });
   }
 
   function render(container, today, prev, dateLabel, allHistory) {
@@ -71,7 +78,6 @@
     container.innerHTML = `
       <div class="header">
         <div class="badge"><span class="dot"></span> ${dateLabel}</div>
-        <button class="history-btn" id="show-history-btn">View History</button>
       </div>
       <div class="grid">
         <div class="panel">
@@ -90,6 +96,9 @@
           <p class="price">${format(today.gold_18kt)}</p>
           <div class="delta">${prev ? `Δ ${delta(today.gold_18kt, prev.gold_18kt)}` : ""}</div>
         </div>
+      </div>
+      <div class="footer">
+        <button class="history-btn" id="show-history-btn">📊 View Full History</button>
       </div>
     `;
 
@@ -135,7 +144,6 @@
           <p class="delta">${String(err)}</p>
         </div>
       `;
-      // eslint-disable-next-line no-console
       console.error("GoldPriceWidget error:", err);
     }
   }
