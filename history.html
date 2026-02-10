@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gold Price History</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+          Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
+          Arial, sans-serif;
+        margin: 2rem;
+      }
+      h1 {
+        font-size: 1.4rem;
+        margin: 0 0 1rem;
+      }
+      .meta {
+        margin-bottom: 1rem;
+        color: #666;
+        font-size: 0.9rem;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+      }
+      thead th {
+        text-align: left;
+        border-bottom: 2px solid #ccc;
+        padding: 0.5rem;
+        position: sticky;
+        top: 0;
+        background: inherit;
+      }
+      tbody td {
+        border-bottom: 1px solid #e0e0e0;
+        padding: 0.5rem;
+      }
+      .num { text-align: right; font-variant-numeric: tabular-nums; }
+      .delta.up { color: #0a7f2e; }
+      .delta.down { color: #c62828; }
+      .delta.flat { color: #888; }
+      .badge { font-size: 0.8rem; opacity: 0.8; display: block; margin-top: 2px; }
+      .footer { margin-top: 1rem; font-size: 0.85rem; color: #666; }
+      .fab-home {
+        position: fixed;
+        left: 16px;
+        bottom: 16px;
+        z-index: 9999;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+        background: #1e88e5;
+        color: #fff;
+        font-weight: 600;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Gold Price History</h1>
+    <div class="meta" id="meta">Loading…</div>
+    <button id="home-fab" class="fab-home">🏠 Home</button>
+    <table id="history-table" aria-describedby="meta">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th class="num">24kt</th>
+          <th class="num">22kt</th>
+          <th class="num">18kt</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="footer">Source: /api/history.json</div>
+
+    <script>
+      // Home button navigates back to the main page
+      document.addEventListener('DOMContentLoaded', () => {
+        const homeBtn = document.getElementById('home-fab');
+        if (homeBtn) {
+          homeBtn.addEventListener('click', () => {
+            // Navigate to index.html in the same directory
+            window.location.href = 'index.html';
+          });
+        }
+      });
+
+      async function loadHistory() {
+        const metaEl = document.getElementById('meta');
+        const tbody = document.querySelector('#history-table tbody');
+        try {
+          const res = await fetch('api/history.json', { cache: 'no-store' });
+          if (!res.ok) throw new Error('Failed to load history.json');
+          const data = await res.json();
+
+          const entries = Object.entries(data)
+            .map(([date, values]) => ({
+              date,
+              v24: parseFloat(values.gold_24kt),
+              v22: parseFloat(values.gold_22kt),
+              v18: parseFloat(values.gold_18kt),
+            }))
+            // Sort descending by date for correct previous comparisons
+            .sort((a, b) => b.date.localeCompare(a.date));
+
+          metaEl.textContent = `Records: ${entries.length} (descending by date)`;
+
+          function fmt(n) { return n.toFixed(2); }
+          function deltaCell(curr, prev) {
+            if (prev == null) return { text: '—', cls: 'delta flat' };
+            const d = curr - prev;
+            const sign = d > 0 ? '+' : '';
+            const cls = d > 0 ? 'delta up' : d < 0 ? 'delta down' : 'delta flat';
+            const pct = prev ? ((d / prev) * 100) : 0;
+            const text = d === 0 ? '0.00 (0.00%)' : `${sign}${fmt(d)} (${pct.toFixed(2)}%)`;
+            return { text, cls };
+          }
+
+          for (let i = 0; i < entries.length; i++) {
+            const e = entries[i];
+            // With descending sort, the previous chronological day is the next row
+            const prev = i < entries.length - 1 ? entries[i + 1] : null;
+            const tr = document.createElement('tr');
+
+            const tdDate = document.createElement('td');
+            tdDate.textContent = e.date;
+            tr.appendChild(tdDate);
+
+            const td24 = document.createElement('td');
+            td24.className = 'num';
+            td24.textContent = fmt(e.v24);
+            const d24 = deltaCell(e.v24, prev?.v24);
+            const span24 = document.createElement('span');
+            span24.className = `badge ${d24.cls}`;
+            span24.textContent = d24.text;
+            td24.appendChild(span24);
+            tr.appendChild(td24);
+
+            const td22 = document.createElement('td');
+            td22.className = 'num';
+            td22.textContent = fmt(e.v22);
+            const d22 = deltaCell(e.v22, prev?.v22);
+            const span22 = document.createElement('span');
+            span22.className = `badge ${d22.cls}`;
+            span22.textContent = d22.text;
+            td22.appendChild(span22);
+            tr.appendChild(td22);
+
+            const td18 = document.createElement('td');
+            td18.className = 'num';
+            td18.textContent = fmt(e.v18);
+            const d18 = deltaCell(e.v18, prev?.v18);
+            const span18 = document.createElement('span');
+            span18.className = `badge ${d18.cls}`;
+            span18.textContent = d18.text;
+            td18.appendChild(span18);
+            tr.appendChild(td18);
+
+            tbody.appendChild(tr);
+          }
+        } catch (err) {
+          metaEl.textContent = `Error: ${err.message}`;
+        }
+      }
+      loadHistory();
+    </script>
+  </body>
+  </html>

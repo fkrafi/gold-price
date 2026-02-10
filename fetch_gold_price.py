@@ -132,7 +132,7 @@ def save_gold_price(data):
     _update_history(date_str, data)
 
 def _update_history(date_str: str, data: dict):
-    """Prepend today's data to ./api/history.json and keep only top 7 items.
+    """Prepend today's data to ./api/history.json and keep only top 30 items.
     History format: { "YYYY-MM-DD": { ... }, ... } with most recent first.
     """
     history_path = "./api/history.json"
@@ -149,7 +149,7 @@ def _update_history(date_str: str, data: dict):
     except json.JSONDecodeError:
         existing = {}
 
-    # Build new ordered history: today first, then previous entries up to 6
+    # Build new ordered history: today first, then previous entries up to 29
     new_history = {date_str: data}
     count = 1
     for k, v in existing.items():
@@ -157,12 +157,12 @@ def _update_history(date_str: str, data: dict):
             continue  # replace today's entry
         new_history[k] = v
         count += 1
-        if count >= 7:
+        if count >= 30:
             break
 
     with open(history_path, "w") as f:
         json.dump(new_history, f, indent=2)
-    print(f"Updated history at {history_path} (top {min(count,7)} items)")
+    print(f"Updated history at {history_path} (top {min(count,30)} items)")
 
 def main():
     data = fetch_joyalukkas_goldrate()

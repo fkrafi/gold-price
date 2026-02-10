@@ -22,49 +22,31 @@
     }).format(num);
   }
 
-  function showHistoryModal(historyData) {
-    const modal = document.createElement('div');
-    modal.id = 'history-modal';
-    modal.innerHTML = `
-      <div class="modal-overlay">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2>Price History</h2>
-            <button class="close-btn" onclick="document.getElementById('history-modal').remove()">&times;</button>
-          </div>
-          <div class="modal-body">
-            <table class="history-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>24K</th>
-                  <th>22K</th>
-                  <th>18K</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${historyData.map(item => `
-                  <tr>
-                    <td>${item.date}</td>
-                    <td>${format(item.gold_24kt)}</td>
-                    <td>${format(item.gold_22kt)}</td>
-                    <td>${format(item.gold_18kt)}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
-    // Close modal when clicking on overlay
-    modal.querySelector('.modal-overlay').addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal-overlay')) {
-        modal.remove();
-      }
+  // Floating history button (bottom-right) that navigates to /history.html
+  function ensureFloatingHistoryButton() {
+    if (document.getElementById('gold-history-fab')) return;
+    const btn = document.createElement('button');
+    btn.id = 'gold-history-fab';
+    btn.type = 'button';
+    btn.textContent = '📊 History';
+    btn.style.position = 'fixed';
+    btn.style.right = '16px';
+    btn.style.bottom = '16px';
+    btn.style.zIndex = '9999';
+    btn.style.padding = '10px 14px';
+    btn.style.borderRadius = '999px';
+    btn.style.border = 'none';
+    btn.style.cursor = 'pointer';
+    btn.style.boxShadow = '0 6px 18px rgba(0,0,0,0.15)';
+    btn.style.background = '#1e88e5';
+    btn.style.color = '#fff';
+    btn.style.fontWeight = '600';
+    btn.style.fontSize = '14px';
+    btn.addEventListener('click', () => {
+      // Navigate to history page
+      window.location.href = '/history.html';
     });
+    document.body.appendChild(btn);
   }
 
   function render(container, today, prev, dateLabel, allHistory) {
@@ -97,16 +79,10 @@
           <div class="delta">${prev ? `Δ ${delta(today.gold_18kt, prev.gold_18kt)}` : ""}</div>
         </div>
       </div>
-      <div class="footer">
-        <button class="history-btn" id="show-history-btn">📊 View Full History</button>
-      </div>
+      <div class="footer"></div>
     `;
-
-    // Add event listener to the button
-    const btn = container.querySelector('#show-history-btn');
-    if (btn) {
-      btn.addEventListener('click', () => showHistoryModal(allHistory));
-    }
+    // Ensure global floating button exists outside container
+    ensureFloatingHistoryButton();
   }
 
   async function mount(target, opts = {}) {
@@ -133,6 +109,7 @@
       const dateLabel = today.date;
 
       render(el, today, prev, dateLabel, sortedHistory);
+      ensureFloatingHistoryButton();
     } catch (err) {
       const dateLabel = new Date().toISOString().slice(0, 10);
       el.innerHTML = `
