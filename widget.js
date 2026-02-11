@@ -44,7 +44,7 @@
     btn.style.fontSize = '14px';
     btn.addEventListener('click', () => {
       // Navigate to history page
-      window.location.href = '/history.html';
+      window.location.href = 'history.html';
     });
     document.body.appendChild(btn);
   }
