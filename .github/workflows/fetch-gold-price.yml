@@ -29,8 +29,12 @@ jobs:
           python -m playwright install chromium
       
       - name: Run gold price fetcher
-        run: |
-          python fetch_gold_price.py
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 10
+          command: |
+            python fetch_gold_price.py
       
       - name: Commit and push changes
         run: |
