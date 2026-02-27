@@ -149,20 +149,16 @@ def _update_history(date_str: str, data: dict):
     except json.JSONDecodeError:
         existing = {}
 
-    # Build new ordered history: today first, then previous entries up to 29
+    # Build new ordered history: today first, then all previous entries
     new_history = {date_str: data}
-    count = 1
     for k, v in existing.items():
         if k == date_str:
             continue  # replace today's entry
         new_history[k] = v
-        count += 1
-        if count >= 30:
-            break
 
     with open(history_path, "w") as f:
         json.dump(new_history, f, indent=2)
-    print(f"Updated history at {history_path} (top {min(count,30)} items)")
+    print(f"Updated history at {history_path}")
 
 def main():
     data = fetch_joyalukkas_goldrate()

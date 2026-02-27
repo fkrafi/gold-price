@@ -1,132 +1,344 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Gold Price History</title>
-    <style>
-      :root {
-        color-scheme: light dark;
-      }
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-          Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
-          Arial, sans-serif;
-        margin: 2rem;
-      }
-      h1 {
-        font-size: 1.4rem;
-        margin: 0 0 1rem;
-      }
-      .meta {
-        margin-bottom: 1rem;
-        color: #666;
-        font-size: 0.9rem;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.95rem;
-      }
-      thead th {
-        text-align: left;
-        border-bottom: 2px solid #ccc;
-        padding: 0.5rem;
-        position: sticky;
-        top: 0;
-        background: inherit;
-      }
-      tbody td {
-        border-bottom: 1px solid #e0e0e0;
-        padding: 0.5rem;
-      }
-      .num { text-align: right; font-variant-numeric: tabular-nums; }
-      .delta.up { color: #0a7f2e; }
-      .delta.down { color: #c62828; }
-      .delta.flat { color: #888; }
-      .badge { font-size: 0.8rem; opacity: 0.8; display: block; margin-top: 2px; }
-      .footer { margin-top: 1rem; font-size: 0.85rem; color: #666; }
-      .fab-home {
-        position: fixed;
-        left: 16px;
-        bottom: 16px;
-        z-index: 9999;
-        padding: 10px 14px;
-        border-radius: 999px;
-        border: none;
-        cursor: pointer;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-        background: #1e88e5;
-        color: #fff;
-        font-weight: 600;
-        font-size: 14px;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Gold Price History</h1>
-    <div class="meta" id="meta">Loading…</div>
-    <button id="home-fab" class="fab-home">🏠 Home</button>
-    <table id="history-table" aria-describedby="meta">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th class="num">24kt</th>
-          <th class="num">22kt</th>
-          <th class="num">18kt</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <div class="footer">Source: /api/history.json</div>
 
-    <script>
-      // Home button navigates back to the main page
-      document.addEventListener('DOMContentLoaded', () => {
-        const homeBtn = document.getElementById('home-fab');
-        if (homeBtn) {
-          homeBtn.addEventListener('click', () => {
-            // Navigate to index.html in the same directory
-            window.location.href = 'index.html';
-          });
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gold Price History</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+        Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
+        Arial, sans-serif;
+      margin: 2rem;
+    }
+
+    .layout {
+      display: flex;
+      gap: 2.5rem;
+    }
+    @media (max-width: 800px) {
+      .layout {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+      .main-col, .side-col {
+        max-width: 100%;
+        flex: 1 1 100%;
+      }
+      .side-col {
+        margin-top: 0;
+        margin-bottom: 1.2rem;
+      }
+    }
+
+    .main-col {
+      flex: 0 1 70%;
+      max-width: 70%;
+    }
+
+    .side-col {
+      flex: 0 1 30%;
+      max-width: 30%;
+      min-width: 220px;
+      background: #f7fafd;
+      box-shadow: 0 2px 12px rgba(33, 150, 243, 0.06);
+      padding: 1.2rem 1rem 1.5rem 1rem;
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 1rem;
+    }
+
+    .meta {
+      margin-bottom: 1rem;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 0.85rem 0.5rem;
+      background: #23272f;
+      color: #fff;
+      font-size: 1.13rem;
+      font-weight: 800;
+      border-bottom: 3px solid #1976d2;
+      box-shadow: 0 4px 16px rgba(25, 118, 210, 0.10);
+      letter-spacing: 0.7px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.10);
+    }
+    .month-summary-row {
+      background: #e3f2fd;
+      color: #1976d2;
+      font-size: 1.04rem;
+      font-weight: 600;
+      border-top: 2px solid #90caf9;
+      border-bottom: 2px solid #90caf9;
+      letter-spacing: 0.3px;
+    }
+    .month-summary-row td {
+      padding-top: 1.1rem;
+      padding-bottom: 0.7rem;
+    }
+
+    tbody td {
+      border-bottom: 1px solid #e0e0e0;
+      padding: 0.5rem;
+    }
+
+    .num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .delta.up {
+      color: #0a7f2e;
+    }
+
+    .delta.down {
+      color: #c62828;
+    }
+
+    .delta.flat {
+      color: #888;
+    }
+
+    .badge {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      display: block;
+      margin-top: 2px;
+    }
+
+    .footer {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .fab-home {
+      position: fixed;
+      left: 16px;
+      bottom: 16px;
+      z-index: 9999;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+      background: #1e88e5;
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+    <div class="main-col">
+      <h1>Gold Price History</h1>
+      <div class="meta" id="meta">Loading…</div>
+      <button id="home-fab" class="fab-home">🏠 Home</button>
+      <table id="history-table" aria-describedby="meta">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th class="num">24kt</th>
+            <th class="num">22kt</th>
+            <th class="num">18kt</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="footer">Source: /api/history.json</div>
+    </div>
+    <div class="side-col">
+      <div class="graph-title">Daily Price Graph</div>
+      <select id="month-select" class="month-select"></select>
+      <div class="graph-section">
+        <canvas id="price-graph" style="width:100%;height:260px;"></canvas>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    // Home button navigates back to the main page
+    document.addEventListener('DOMContentLoaded', () => {
+      const homeBtn = document.getElementById('home-fab');
+      if (homeBtn) {
+        homeBtn.addEventListener('click', () => {
+          // Navigate to index.html in the same directory
+          window.location.href = 'index.html';
+        });
+      }
+    });
+
+    async function loadHistory() {
+      const metaEl = document.getElementById('meta');
+      const tbody = document.querySelector('#history-table tbody');
+      try {
+        const res = await fetch('api/history.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to load history.json');
+        const data = await res.json();
+
+        const entries = Object.entries(data)
+          .map(([date, values]) => ({
+            date,
+            v24: parseFloat(values.gold_24kt),
+            v22: parseFloat(values.gold_22kt),
+            v18: parseFloat(values.gold_18kt),
+          }))
+          // Sort ascending for delta, then reverse for display
+          .sort((a, b) => a.date.localeCompare(b.date));
+
+        metaEl.textContent = `Records: ${entries.length} (descending by date)`;
+
+        function fmt(n) { return n.toFixed(2); }
+        function deltaCell(curr, prev) {
+          if (prev == null) return { text: '—', cls: 'delta flat' };
+          const d = curr - prev;
+          const sign = d > 0 ? '+' : '';
+          const cls = d > 0 ? 'delta up' : d < 0 ? 'delta down' : 'delta flat';
+          const pct = prev ? ((d / prev) * 100) : 0;
+          const text = d === 0 ? '0.00 (0.00%)' : `${sign}${fmt(d)} (${pct.toFixed(2)}%)`;
+          return { text, cls };
         }
-      });
 
-      async function loadHistory() {
-        const metaEl = document.getElementById('meta');
-        const tbody = document.querySelector('#history-table tbody');
-        try {
-          const res = await fetch('api/history.json', { cache: 'no-store' });
-          if (!res.ok) throw new Error('Failed to load history.json');
-          const data = await res.json();
+        // Group entries by month
+        const monthGroups = {};
+        entries.forEach(e => {
+          const monthKey = e.date.slice(0, 7); // YYYY-MM
+          if (!monthGroups[monthKey]) {
+            monthGroups[monthKey] = [];
+          }
+          monthGroups[monthKey].push(e);
+        });
 
-          const entries = Object.entries(data)
-            .map(([date, values]) => ({
-              date,
-              v24: parseFloat(values.gold_24kt),
-              v22: parseFloat(values.gold_22kt),
-              v18: parseFloat(values.gold_18kt),
-            }))
-            // Sort descending by date for correct previous comparisons
-            .sort((a, b) => b.date.localeCompare(a.date));
+        // Sort months in descending order
+        const months = Object.keys(monthGroups).sort().reverse();
 
-          metaEl.textContent = `Records: ${entries.length} (descending by date)`;
-
-          function fmt(n) { return n.toFixed(2); }
-          function deltaCell(curr, prev) {
-            if (prev == null) return { text: '—', cls: 'delta flat' };
-            const d = curr - prev;
-            const sign = d > 0 ? '+' : '';
-            const cls = d > 0 ? 'delta up' : d < 0 ? 'delta down' : 'delta flat';
-            const pct = prev ? ((d / prev) * 100) : 0;
-            const text = d === 0 ? '0.00 (0.00%)' : `${sign}${fmt(d)} (${pct.toFixed(2)}%)`;
-            return { text, cls };
+        // Render month groups
+        let prevEntry = null;
+        months.forEach(monthKey => {
+          // --- Populate month dropdown for graph ---
+          const monthSelect = document.getElementById('month-select');
+          if (monthSelect) {
+            months.forEach(monthKey => {
+              const opt = document.createElement('option');
+              opt.value = monthKey;
+              opt.textContent = monthKey;
+              monthSelect.appendChild(opt);
+            });
           }
 
-          for (let i = 0; i < entries.length; i++) {
-            const e = entries[i];
-            // With descending sort, the previous chronological day is the next row
-            const prev = i < entries.length - 1 ? entries[i + 1] : null;
+          // --- Chart.js graph rendering ---
+          const ctx = document.getElementById('price-graph').getContext('2d');
+          let chart;
+          function renderGraph(monthKey) {
+            const monthEntries = monthGroups[monthKey] || [];
+            // Sort by date ascending for graph
+            const sorted = monthEntries.slice().sort((a, b) => a.date.localeCompare(b.date));
+            const labels = sorted.map(e => e.date.slice(-2));
+            const data24 = sorted.map(e => e.v24);
+            const data22 = sorted.map(e => e.v22);
+            const data18 = sorted.map(e => e.v18);
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels,
+                datasets: [
+                  { label: '24kt', data: data24, borderColor: '#1976d2', backgroundColor: 'rgba(25,118,210,0.08)', tension: 0.2, pointRadius: 2, fill: false },
+                  { label: '22kt', data: data22, borderColor: '#388e3c', backgroundColor: 'rgba(56,142,60,0.08)', tension: 0.2, pointRadius: 2, fill: false },
+                  { label: '18kt', data: data18, borderColor: '#f9a825', backgroundColor: 'rgba(249,168,37,0.08)', tension: 0.2, pointRadius: 2, fill: false },
+                ]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: true, position: 'top' },
+                  title: { display: false }
+                },
+                scales: {
+                  x: { title: { display: true, text: 'Day' } },
+                  y: { title: { display: true, text: 'Price (AED)' }, beginAtZero: false }
+                }
+              }
+            });
+          }
+
+          if (monthSelect) {
+            monthSelect.addEventListener('change', e => {
+              renderGraph(monthSelect.value);
+            });
+            // Render initial graph
+            if (monthSelect.value) renderGraph(monthSelect.value);
+          }
+          // Sort month entries ascending for correct delta, then reverse for display
+          const monthEntriesAsc = monthGroups[monthKey].slice().sort((a, b) => a.date.localeCompare(b.date));
+          const monthEntries = monthEntriesAsc.slice().reverse();
+
+          // Calculate minimum prices and dates for each type
+          const min24 = Math.min(...monthEntries.map(e => e.v24));
+          const min24Entry = monthEntries.find(e => e.v24 === min24);
+          const min22 = Math.min(...monthEntries.map(e => e.v22));
+          const min22Entry = monthEntries.find(e => e.v22 === min22);
+          const min18 = Math.min(...monthEntries.map(e => e.v18));
+          const min18Entry = monthEntries.find(e => e.v18 === min18);
+
+          // Add month header row with min values under each column
+          const headerTr = document.createElement('tr');
+          headerTr.className = 'month-summary-row';
+
+          // Month cell (spans only the date column)
+          const monthTd = document.createElement('td');
+          monthTd.colSpan = '1';
+          monthTd.style.fontWeight = 'bold';
+          monthTd.style.padding = '0.75rem 0.5rem';
+          monthTd.textContent = monthKey;
+          headerTr.appendChild(monthTd);
+
+          // 24kt min cell
+          const min24Td = document.createElement('td');
+          min24Td.className = 'num';
+          min24Td.innerHTML = `<span title="${min24Entry.date}">${fmt(min24)}</span><span class="badge">on ${min24Entry.date}</span>`;
+          headerTr.appendChild(min24Td);
+
+          // 22kt min cell
+          const min22Td = document.createElement('td');
+          min22Td.className = 'num';
+          min22Td.innerHTML = `<span title="${min22Entry.date}">${fmt(min22)}</span><span class="badge">on ${min22Entry.date}</span>`;
+          headerTr.appendChild(min22Td);
+
+          // 18kt min cell
+          const min18Td = document.createElement('td');
+          min18Td.className = 'num';
+          min18Td.innerHTML = `<span title="${min18Entry.date}">${fmt(min18)}</span><span class="badge">on ${min18Entry.date}</span>`;
+          headerTr.appendChild(min18Td);
+
+          tbody.appendChild(headerTr);
+
+          // Add entries for this month
+          monthEntries.forEach(e => {
             const tr = document.createElement('tr');
 
             const tdDate = document.createElement('td');
@@ -136,7 +348,10 @@
             const td24 = document.createElement('td');
             td24.className = 'num';
             td24.textContent = fmt(e.v24);
-            const d24 = deltaCell(e.v24, prev?.v24);
+            // For delta, find the previous date (chronologically) for this entry
+            const idxAsc = monthEntriesAsc.findIndex(x => x.date === e.date);
+            const prevAsc = idxAsc > 0 ? monthEntriesAsc[idxAsc - 1] : null;
+            const d24 = deltaCell(e.v24, prevAsc?.v24);
             const span24 = document.createElement('span');
             span24.className = `badge ${d24.cls}`;
             span24.textContent = d24.text;
@@ -146,7 +361,7 @@
             const td22 = document.createElement('td');
             td22.className = 'num';
             td22.textContent = fmt(e.v22);
-            const d22 = deltaCell(e.v22, prev?.v22);
+            const d22 = deltaCell(e.v22, prevAsc?.v22);
             const span22 = document.createElement('span');
             span22.className = `badge ${d22.cls}`;
             span22.textContent = d22.text;
@@ -156,7 +371,7 @@
             const td18 = document.createElement('td');
             td18.className = 'num';
             td18.textContent = fmt(e.v18);
-            const d18 = deltaCell(e.v18, prev?.v18);
+            const d18 = deltaCell(e.v18, prevAsc?.v18);
             const span18 = document.createElement('span');
             span18.className = `badge ${d18.cls}`;
             span18.textContent = d18.text;
@@ -164,12 +379,14 @@
             tr.appendChild(td18);
 
             tbody.appendChild(tr);
-          }
-        } catch (err) {
-          metaEl.textContent = `Error: ${err.message}`;
-        }
+          });
+        });
+      } catch (err) {
+        metaEl.textContent = `Error: ${err.message}`;
       }
-      loadHistory();
-    </script>
-  </body>
-  </html>
+    }
+    loadHistory();
+  </script>
+</body>
+
+</html>
