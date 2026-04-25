@@ -2,8 +2,8 @@ name: Fetch Gold Price and Update Data
 
 on:
   schedule:
-    # Run every day at 06:00 UTC
-    - cron: '0 06 * * *'
+    # Run every day at 06:30 UTC (10:30 Dubai time, UTC+4)
+    - cron: '30 06 * * *'
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
