@@ -1,15 +1,16 @@
 const CACHE_NAME = 'gold-price-v1';
+const BASE_PATH = '/gold-price';
 
 const APP_SHELL = [
-  '/',
-  '/index.html',
-  '/history.html',
-  '/widget.js',
-  '/manifest.webmanifest',
-  '/icons/icon-192x192.png',
-  '/icons/icon-192x192-maskable.png',
-  '/icons/icon-512x512.png',
-  '/icons/icon-512x512-maskable.png',
+  BASE_PATH + '/',
+  BASE_PATH + '/index.html',
+  BASE_PATH + '/history.html',
+  BASE_PATH + '/widget.js',
+  BASE_PATH + '/manifest.webmanifest',
+  BASE_PATH + '/icons/icon-192x192.png',
+  BASE_PATH + '/icons/icon-192x192-maskable.png',
+  BASE_PATH + '/icons/icon-512x512.png',
+  BASE_PATH + '/icons/icon-512x512-maskable.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -37,7 +38,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   // For API/data requests: network-first, fall back to cache
-  if (url.pathname.startsWith('/api/')) {
+  if (url.pathname.startsWith(BASE_PATH + '/api/')) {
     event.respondWith(
       fetch(request)
         .then((response) => {
