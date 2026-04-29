@@ -39,7 +39,7 @@
     btn.style.cursor = 'pointer';
     btn.style.boxShadow = '0 6px 18px rgba(0,0,0,0.15)';
     btn.style.background = 'var(--accent, #C9A227)';
-    btn.style.color = 'var(--bg, #fff)';
+    btn.style.color = 'var(--fab-text, #333)';
     btn.style.fontWeight = '600';
     btn.style.fontSize = '14px';
     btn.addEventListener('click', () => {
