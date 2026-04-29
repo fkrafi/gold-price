@@ -38,8 +38,8 @@
     btn.style.border = 'none';
     btn.style.cursor = 'pointer';
     btn.style.boxShadow = '0 6px 18px rgba(0,0,0,0.15)';
-    btn.style.background = '#1e88e5';
-    btn.style.color = '#fff';
+    btn.style.background = 'var(--accent, #C9A227)';
+    btn.style.color = 'var(--bg, #fff)';
     btn.style.fontWeight = '600';
     btn.style.fontSize = '14px';
     btn.addEventListener('click', () => {

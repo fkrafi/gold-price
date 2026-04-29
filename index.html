@@ -1,11 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#D4AF37">
     <title>Gold Price Widget</title>
     <link rel="manifest" href="manifest.webmanifest">
+    <!-- Inline theme init: runs before paint to prevent flash of wrong theme -->
+    <script>
+        (function () {
+            var saved = localStorage.getItem('gold-theme');
+            var h = new Date().getHours();
+            var auto = (h >= 6 && h < 18) ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', saved || auto);
+        })();
+    </script>
     <style>
         * {
             margin: 0;
@@ -13,14 +22,48 @@
             box-sizing: border-box;
         }
 
+        /* ── Ivory Marble (light, default) ── */
+        :root {
+            --bg: #F8F5F0;
+            --text: #333333;
+            --card: #FFFFFF;
+            --accent: #C9A227;
+            --border: #e8e0d0;
+            --badge-bg: #f0ece4;
+            --muted: #888888;
+            --widget-bg: #FFFFFF;
+            --heading-font: Georgia, "Times New Roman", serif;
+            --body-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --panel-hover-shadow: 0 4px 20px rgba(201, 162, 39, 0.15);
+            --widget-shadow: 0 4px 24px rgba(201, 162, 39, 0.08);
+        }
+
+        /* ── Midnight Gold (dark) ── */
+        [data-theme="dark"] {
+            --bg: #0B0B0B;
+            --text: #FFFFFF;
+            --card: #121212;
+            --accent: #FFD700;
+            --border: #2a2a2a;
+            --badge-bg: #1e1e1e;
+            --muted: #a0a0a0;
+            --widget-bg: #1a1a1a;
+            --heading-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --body-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --panel-hover-shadow: 0 4px 20px rgba(255, 215, 0, 0.08);
+            --widget-shadow: 0 0 30px rgba(255, 215, 0, 0.06);
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: #0a0a0a;
+            font-family: var(--body-font);
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            transition: background 0.4s ease, color 0.4s ease;
         }
 
         .container {
@@ -29,10 +72,12 @@
         }
 
         #widget {
-            background: #1a1a1a;
+            background: var(--widget-bg);
             border-radius: 12px;
-            border: 1px solid #2a2a2a;
+            border: 1px solid var(--border);
             padding: 24px;
+            box-shadow: var(--widget-shadow);
+            transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
         }
 
         .header {
@@ -44,12 +89,12 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: #2a2a2a;
+            background: var(--badge-bg);
             padding: 8px 16px;
             border-radius: 20px;
             font-size: 13px;
             font-weight: 500;
-            color: #a0a0a0;
+            color: var(--muted);
         }
 
         .dot {
@@ -76,24 +121,26 @@
         }
 
         .panel {
-            background: #222;
+            background: var(--card);
             padding: 24px;
             border-radius: 8px;
-            border: 1px solid #2a2a2a;
+            border: 1px solid var(--border);
             text-align: center;
             transition: all 0.3s ease;
         }
 
         .panel:hover {
-            border-color: #3a3a3a;
+            border-color: var(--accent);
             transform: translateY(-2px);
+            box-shadow: var(--panel-hover-shadow);
         }
 
         .panel h3 {
+            font-family: var(--heading-font);
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 12px;
-            color: #888;
+            color: var(--accent);
             text-transform: uppercase;
             letter-spacing: 1px;
         }
@@ -102,7 +149,7 @@
             font-size: 32px;
             font-weight: 700;
             margin-bottom: 8px;
-            color: #fff;
+            color: var(--text);
             line-height: 1.2;
         }
 
@@ -116,6 +163,32 @@
             display: none;
         }
 
+        #theme-toggle {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 9999;
+            background: var(--badge-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        #theme-toggle:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: scale(1.1);
+        }
+
         @media (max-width: 768px) {
             .grid {
                 grid-template-columns: 1fr;
@@ -124,6 +197,7 @@
     </style>
 </head>
 <body>
+    <button id="theme-toggle" aria-label="Toggle theme">🌙</button>
     <div class="container">
         <div id="widget" data-source-history="api/history.json"></div>
     </div>
@@ -138,6 +212,28 @@
                 navigator.serviceWorker.register('/gold-price/service-worker.js');
             });
         }
+    </script>
+    <script>
+        (function () {
+            function updateToggleIcon() {
+                var btn = document.getElementById('theme-toggle');
+                if (!btn) return;
+                var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                btn.textContent = isDark ? '☀️' : '🌙';
+                btn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+            }
+            updateToggleIcon();
+            var btn = document.getElementById('theme-toggle');
+            if (btn) {
+                btn.addEventListener('click', function () {
+                    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                    var next = isDark ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', next);
+                    localStorage.setItem('gold-theme', next);
+                    updateToggleIcon();
+                });
+            }
+        })();
     </script>
 </body>
 </html>
