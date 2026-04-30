@@ -1,0 +1,45 @@
+name: Fetch from iGold
+
+on:
+  schedule:
+    # Run every day at 06:30 UTC (10:30 Dubai time, UTC+4)
+    - cron: '30 06 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  fetch-and-update:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install chromium
+      
+      - name: Run gold price fetcher
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 10
+          command: |
+            python igold_scrapper.py
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "Update gold price data - $(date +'%Y-%m-%d %H:%M:%S')"
+          git push
