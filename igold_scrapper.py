@@ -125,11 +125,13 @@ def save_gold_price(data):
 
 
 def _update_history(date_str: str, data: dict):
-    """Prepend today's data to ./api/v2/history.json and keep history ordered.
+    """Save today's data in a month-wise history file (YYYY-MM.json).
     History format: { "YYYY-MM-DD": { ... }, ... } with most recent first.
     """
-    history_path = f"{API_DIR}/history.json"
-    os.makedirs(API_DIR, exist_ok=True)
+    month_str = date_str[:7]  # YYYY-MM
+    history_dir = f"{API_DIR}/history"
+    history_path = f"{history_dir}/{month_str}.json"
+    os.makedirs(history_dir, exist_ok=True)
 
     try:
         with open(history_path, "r") as f:
@@ -150,7 +152,7 @@ def _update_history(date_str: str, data: dict):
 
     with open(history_path, "w") as f:
         json.dump(new_history, f, indent=2)
-    print(f"Updated history at {history_path}")
+    print(f"Updated monthly history at {history_path}")
 
 
 def main():
