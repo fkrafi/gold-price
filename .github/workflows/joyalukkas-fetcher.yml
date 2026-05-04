@@ -34,7 +34,7 @@ jobs:
           max_attempts: 3
           timeout_minutes: 10
           command: |
-            python fetch_gold_price.py
+            python joyalukkas_scrapper.py
       
       - name: Commit and push changes
         run: |

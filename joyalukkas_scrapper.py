@@ -134,6 +134,7 @@ def save_gold_price(data):
 def _update_history(date_str: str, data: dict):
     """Prepend today's data to ./api/history.json and keep only top 30 items.
     History format: { "YYYY-MM-DD": { ... }, ... } with most recent first.
+    Also updates monthly history file (YYYY_MM.json).
     """
     history_path = "./api/history.json"
     os.makedirs("./api", exist_ok=True)
@@ -159,6 +160,34 @@ def _update_history(date_str: str, data: dict):
     with open(history_path, "w") as f:
         json.dump(new_history, f, indent=2)
     print(f"Updated history at {history_path}")
+
+    # Update monthly history file
+    _update_monthly_history(date_str, data)
+
+def _update_monthly_history(date_str: str, data: dict):
+    """Update monthly history file (YYYY_MM.json) with today's data."""
+    # Extract year and month from date_str (format: YYYY-MM-DD)
+    year_month = date_str[:7]
+    monthly_path = f"./api/history/{year_month}.json"
+    os.makedirs("./api/history", exist_ok=True)
+
+    # Load existing monthly data, tolerate missing or invalid JSON
+    try:
+        with open(monthly_path, "r") as f:
+            monthly_data = json.load(f)
+            if not isinstance(monthly_data, dict):
+                monthly_data = {}
+    except FileNotFoundError:
+        monthly_data = {}
+    except json.JSONDecodeError:
+        monthly_data = {}
+
+    # Update with today's data
+    monthly_data[date_str] = data
+
+    with open(monthly_path, "w") as f:
+        json.dump(monthly_data, f, indent=2)
+    print(f"Updated monthly history at {monthly_path}")
 
 def main():
     data = fetch_joyalukkas_goldrate()
