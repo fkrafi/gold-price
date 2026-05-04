@@ -191,12 +191,122 @@
       border-color: var(--accent);
       transform: scale(1.1);
     }
+
+    .header-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .month-picker-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .month-picker-wrapper:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+    }
+
+    .month-picker-label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    #monthPicker {
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-size: 0.95rem;
+      padding: 0.3rem 0.5rem;
+      cursor: pointer;
+      font-family: var(--body-font);
+      appearance: none;
+      min-width: 120px;
+    }
+
+    #monthPicker:focus {
+      outline: none;
+    }
+
+    #monthPicker:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* Styling for month input dropdown */
+    #monthPicker option {
+      background: var(--card);
+      color: var(--text);
+    }
+
+    [data-theme="dark"] #monthPicker {
+      color: var(--accent);
+    }
+
+    [data-theme="dark"] #monthPicker::placeholder {
+      color: var(--muted);
+    }
+
+    .clear-month-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .clear-month-btn:hover {
+      background: var(--badge-bg);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    @media (max-width: 600px) {
+      .header-container {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .month-picker-wrapper {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 
 <body>
   <button id="theme-toggle" aria-label="Toggle theme">🌙</button>
-  <h1>Gold Price History</h1>
+  <div class="header-container">
+    <h1>Gold Price History</h1>
+    <div class="month-picker-wrapper">
+      <input type="month" id="monthPicker" min="2026-02">
+      <button class="clear-month-btn" id="clearMonthBtn" title="Clear filter" aria-label="Clear month filter">✕</button>
+    </div>
+  </div>
   <div class="meta" id="meta">Loading…</div>
   <button id="home-fab" class="fab-home">🏠 Home</button>
   <table id="history-table" aria-describedby="meta">
@@ -214,26 +324,60 @@
   <!-- Graph and Chart.js removed -->
 
   <script>
-    // Home button navigates back to the main page
+    let allEntries = []; // Store all entries for filtering
+
+    // Month picker functionality
     document.addEventListener('DOMContentLoaded', () => {
+      const monthPicker = document.getElementById('monthPicker');
+      const clearMonthBtn = document.getElementById('clearMonthBtn');
+
+      // Set current month as max and default value for month picker
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const currentMonth = `${year}-${month}`;
+      if (monthPicker) {
+        monthPicker.setAttribute('max', currentMonth);
+        monthPicker.value = currentMonth; // Set default to current month
+      }
+
+      if (monthPicker) {
+        monthPicker.addEventListener('change', async (e) => {
+          await renderTable(e.target.value);
+        });
+      }
+
+      if (clearMonthBtn) {
+        clearMonthBtn.addEventListener('click', async () => {
+          monthPicker.value = '';
+          await renderTable('');
+        });
+      }
+
       const homeBtn = document.getElementById('home-fab');
       if (homeBtn) {
         homeBtn.addEventListener('click', () => {
-          // Navigate to index.html in the same directory
           window.location.href = 'index.html';
         });
       }
+
+      // Load history data
+      loadHistory();
+
+      // After loading, render the current month by default
+      setTimeout(() => {
+        renderTable(currentMonth);
+      }, 100);
     });
 
     async function loadHistory() {
       const metaEl = document.getElementById('meta');
-      const tbody = document.querySelector('#history-table tbody');
       try {
         const res = await fetch('api/history.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to load history.json');
         const data = await res.json();
 
-        const entries = Object.entries(data)
+        allEntries = Object.entries(data)
           .map(([date, values]) => ({
             date,
             v24: parseFloat(values.gold_24kt),
@@ -242,125 +386,171 @@
           }))
           .sort((a, b) => a.date.localeCompare(b.date));
 
-        metaEl.textContent = `Records: ${entries.length} (descending by date)`;
-
-        function fmt(n) { return n.toFixed(2); }
-        function deltaCell(curr, prev) {
-          if (prev == null) return { text: '—', cls: 'delta flat' };
-          const d = curr - prev;
-          const sign = d > 0 ? '+' : '';
-          const cls = d > 0 ? 'delta up' : d < 0 ? 'delta down' : 'delta flat';
-          const pct = prev ? ((d / prev) * 100) : 0;
-          const text = d === 0 ? '0.00 (0.00%)' : `${sign}${fmt(d)} (${pct.toFixed(2)}%)`;
-          return { text, cls };
-        }
-
-        // Group entries by month
-        const monthGroups = {};
-        entries.forEach(e => {
-          const monthKey = e.date.slice(0, 7); // YYYY-MM
-          if (!monthGroups[monthKey]) {
-            monthGroups[monthKey] = [];
-          }
-          monthGroups[monthKey].push(e);
-        });
-
-        // Sort months in descending order
-        const months = Object.keys(monthGroups).sort().reverse();
-
-        // Render month groups
-        months.forEach(monthKey => {
-          const monthEntriesAsc = monthGroups[monthKey].slice().sort((a, b) => a.date.localeCompare(b.date));
-          const monthEntries = monthEntriesAsc.slice().reverse();
-
-          // Calculate minimum prices and dates for each type
-          const min24 = Math.min(...monthEntries.map(e => e.v24));
-          const min24Entry = monthEntries.find(e => e.v24 === min24);
-          const min22 = Math.min(...monthEntries.map(e => e.v22));
-          const min22Entry = monthEntries.find(e => e.v22 === min22);
-          const min18 = Math.min(...monthEntries.map(e => e.v18));
-          const min18Entry = monthEntries.find(e => e.v18 === min18);
-
-          // Add month header row with min values under each column
-          const headerTr = document.createElement('tr');
-          headerTr.className = 'month-summary-row';
-
-          // Month cell (spans only the date column)
-          const monthTd = document.createElement('td');
-          monthTd.colSpan = '1';
-          monthTd.style.fontWeight = 'bold';
-          monthTd.style.padding = '0.75rem 0.5rem';
-          monthTd.textContent = monthKey;
-          headerTr.appendChild(monthTd);
-
-          // 24kt min cell
-          const min24Td = document.createElement('td');
-          min24Td.className = 'num';
-          min24Td.innerHTML = `<span title="${min24Entry.date}">${fmt(min24)}</span><span class="badge">on ${min24Entry.date}</span>`;
-          headerTr.appendChild(min24Td);
-
-          // 22kt min cell
-          const min22Td = document.createElement('td');
-          min22Td.className = 'num';
-          min22Td.innerHTML = `<span title="${min22Entry.date}">${fmt(min22)}</span><span class="badge">on ${min22Entry.date}</span>`;
-          headerTr.appendChild(min22Td);
-
-          // 18kt min cell
-          const min18Td = document.createElement('td');
-          min18Td.className = 'num';
-          min18Td.innerHTML = `<span title="${min18Entry.date}">${fmt(min18)}</span><span class="badge">on ${min18Entry.date}</span>`;
-          headerTr.appendChild(min18Td);
-
-          tbody.appendChild(headerTr);
-
-          // Add entries for this month
-          monthEntries.forEach(e => {
-            const tr = document.createElement('tr');
-
-            const tdDate = document.createElement('td');
-            tdDate.textContent = e.date;
-            tr.appendChild(tdDate);
-
-            const td24 = document.createElement('td');
-            td24.className = 'num';
-            td24.textContent = fmt(e.v24);
-            const idxAsc = monthEntriesAsc.findIndex(x => x.date === e.date);
-            const prevAsc = idxAsc > 0 ? monthEntriesAsc[idxAsc - 1] : null;
-            const d24 = deltaCell(e.v24, prevAsc?.v24);
-            const span24 = document.createElement('span');
-            span24.className = `badge ${d24.cls}`;
-            span24.textContent = d24.text;
-            td24.appendChild(span24);
-            tr.appendChild(td24);
-
-            const td22 = document.createElement('td');
-            td22.className = 'num';
-            td22.textContent = fmt(e.v22);
-            const d22 = deltaCell(e.v22, prevAsc?.v22);
-            const span22 = document.createElement('span');
-            span22.className = `badge ${d22.cls}`;
-            span22.textContent = d22.text;
-            td22.appendChild(span22);
-            tr.appendChild(td22);
-
-            const td18 = document.createElement('td');
-            td18.className = 'num';
-            td18.textContent = fmt(e.v18);
-            const d18 = deltaCell(e.v18, prevAsc?.v18);
-            const span18 = document.createElement('span');
-            span18.className = `badge ${d18.cls}`;
-            span18.textContent = d18.text;
-            td18.appendChild(span18);
-            tr.appendChild(td18);
-
-            tbody.appendChild(tr);
-          });
-        });
+        metaEl.textContent = `Records: ${allEntries.length} (descending by date)`;
+        await renderTable('');
       } catch (err) {
         metaEl.textContent = `Error: ${err.message}`;
       }
     }
-    loadHistory();
+
+    async function renderTable(selectedMonth) {
+      const metaEl = document.getElementById('meta');
+      const tbody = document.querySelector('#history-table tbody');
+      tbody.innerHTML = '';
+
+      // Fetch from monthly file if month is selected
+      let entries = allEntries;
+      if (selectedMonth) {
+        try {
+          const monthFile = selectedMonth; // Use YYYY-MM format directly
+          const res = await fetch(`api/history/${monthFile}.json`, { cache: 'no-store' });
+          if (!res.ok) throw new Error('Failed to load month data');
+          const monthData = await res.json();
+          
+          entries = Object.entries(monthData)
+            .map(([date, values]) => ({
+              date,
+              v24: parseFloat(values.gold_24kt),
+              v22: parseFloat(values.gold_22kt),
+              v18: parseFloat(values.gold_18kt),
+            }))
+            .sort((a, b) => a.date.localeCompare(b.date));
+          
+          metaEl.textContent = `Showing ${entries.length} records for ${selectedMonth}`;
+        } catch (err) {
+          metaEl.textContent = `Error loading month data: ${err.message}`;
+          return;
+        }
+      } else {
+        metaEl.textContent = `Records: ${allEntries.length} (descending by date)`;
+      }
+
+      if (entries.length === 0) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = '4';
+        td.style.textAlign = 'center';
+        td.style.padding = '2rem';
+        td.style.color = 'var(--muted)';
+        td.textContent = 'No data available for this month';
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+
+      function fmt(n) { return n.toFixed(2); }
+      function deltaCell(curr, prev) {
+        if (prev == null) return { text: '—', cls: 'delta flat' };
+        const d = curr - prev;
+        const sign = d > 0 ? '+' : '';
+        const cls = d > 0 ? 'delta up' : d < 0 ? 'delta down' : 'delta flat';
+        const pct = prev ? ((d / prev) * 100) : 0;
+        const text = d === 0 ? '0.00 (0.00%)' : `${sign}${fmt(d)} (${pct.toFixed(2)}%)`;
+        return { text, cls };
+      }
+
+      // Group entries by month
+      const monthGroups = {};
+      entries.forEach(e => {
+        const monthKey = e.date.slice(0, 7); // YYYY-MM
+        if (!monthGroups[monthKey]) {
+          monthGroups[monthKey] = [];
+        }
+        monthGroups[monthKey].push(e);
+      });
+
+      // Sort months in descending order
+      const months = Object.keys(monthGroups).sort().reverse();
+
+      // Render month groups
+      months.forEach(monthKey => {
+        const monthEntriesAsc = monthGroups[monthKey].slice().sort((a, b) => a.date.localeCompare(b.date));
+        const monthEntries = monthEntriesAsc.slice().reverse();
+
+        // Calculate minimum prices and dates for each type
+        const min24 = Math.min(...monthEntries.map(e => e.v24));
+        const min24Entry = monthEntries.find(e => e.v24 === min24);
+        const min22 = Math.min(...monthEntries.map(e => e.v22));
+        const min22Entry = monthEntries.find(e => e.v22 === min22);
+        const min18 = Math.min(...monthEntries.map(e => e.v18));
+        const min18Entry = monthEntries.find(e => e.v18 === min18);
+
+        // Add month header row with min values under each column
+        const headerTr = document.createElement('tr');
+        headerTr.className = 'month-summary-row';
+
+        // Month cell (spans only the date column)
+        const monthTd = document.createElement('td');
+        monthTd.colSpan = '1';
+        monthTd.style.fontWeight = 'bold';
+        monthTd.style.padding = '0.75rem 0.5rem';
+        monthTd.textContent = monthKey;
+        headerTr.appendChild(monthTd);
+
+        // 24kt min cell
+        const min24Td = document.createElement('td');
+        min24Td.className = 'num';
+        min24Td.innerHTML = `<span title="${min24Entry.date}">${fmt(min24)}</span><span class="badge">on ${min24Entry.date}</span>`;
+        headerTr.appendChild(min24Td);
+
+        // 22kt min cell
+        const min22Td = document.createElement('td');
+        min22Td.className = 'num';
+        min22Td.innerHTML = `<span title="${min22Entry.date}">${fmt(min22)}</span><span class="badge">on ${min22Entry.date}</span>`;
+        headerTr.appendChild(min22Td);
+
+        // 18kt min cell
+        const min18Td = document.createElement('td');
+        min18Td.className = 'num';
+        min18Td.innerHTML = `<span title="${min18Entry.date}">${fmt(min18)}</span><span class="badge">on ${min18Entry.date}</span>`;
+        headerTr.appendChild(min18Td);
+
+        tbody.appendChild(headerTr);
+
+        // Add entries for this month
+        monthEntries.forEach(e => {
+          const tr = document.createElement('tr');
+
+          const tdDate = document.createElement('td');
+          tdDate.textContent = e.date;
+          tr.appendChild(tdDate);
+
+          const td24 = document.createElement('td');
+          td24.className = 'num';
+          td24.textContent = fmt(e.v24);
+          const idxAsc = monthEntriesAsc.findIndex(x => x.date === e.date);
+          const prevAsc = idxAsc > 0 ? monthEntriesAsc[idxAsc - 1] : null;
+          const d24 = deltaCell(e.v24, prevAsc?.v24);
+          const span24 = document.createElement('span');
+          span24.className = `badge ${d24.cls}`;
+          span24.textContent = d24.text;
+          td24.appendChild(span24);
+          tr.appendChild(td24);
+
+          const td22 = document.createElement('td');
+          td22.className = 'num';
+          td22.textContent = fmt(e.v22);
+          const d22 = deltaCell(e.v22, prevAsc?.v22);
+          const span22 = document.createElement('span');
+          span22.className = `badge ${d22.cls}`;
+          span22.textContent = d22.text;
+          td22.appendChild(span22);
+          tr.appendChild(td22);
+
+          const td18 = document.createElement('td');
+          td18.className = 'num';
+          td18.textContent = fmt(e.v18);
+          const d18 = deltaCell(e.v18, prevAsc?.v18);
+          const span18 = document.createElement('span');
+          span18.className = `badge ${d18.cls}`;
+          span18.textContent = d18.text;
+          td18.appendChild(span18);
+          tr.appendChild(td18);
+
+          tbody.appendChild(tr);
+        });
+      });
+    }
   </script>
   <script>
     if ('serviceWorker' in navigator) {
