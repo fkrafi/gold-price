@@ -24,8 +24,8 @@
   }
 
   function isStandalonePwa() {
-    const iosStandaloneSupported = typeof window.navigator.standalone !== 'undefined';
-    return window.matchMedia('(display-mode: standalone)').matches || (iosStandaloneSupported && window.navigator.standalone === true);
+    const hasIosStandaloneProperty = typeof window.navigator.standalone !== 'undefined';
+    return window.matchMedia('(display-mode: standalone)').matches || (hasIosStandaloneProperty && window.navigator.standalone === true);
   }
 
   async function notifyTodayPrice(today) {
@@ -34,11 +34,7 @@
     // Store notified date in YYYY-MM-DD to match today.date from history payload.
     if (localStorage.getItem(NOTIFIED_DATE_KEY) === today.date) return;
 
-    let permission = Notification.permission;
-    if (permission === 'default') {
-      permission = await Notification.requestPermission();
-    }
-    if (permission !== 'granted') return;
+    if (Notification.permission !== 'granted') return;
 
     const title = `Gold price update: ${today.date}`;
     const body = `24K: ${format(today.gold_24kt)} | 22K: ${format(today.gold_22kt)} | 18K: ${format(today.gold_18kt)}`;
