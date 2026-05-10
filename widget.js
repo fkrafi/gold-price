@@ -24,7 +24,8 @@
   }
 
   function isStandalonePwa() {
-    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const iosStandaloneSupported = typeof window.navigator.standalone !== 'undefined';
+    return window.matchMedia('(display-mode: standalone)').matches || (iosStandaloneSupported && window.navigator.standalone === true);
   }
 
   async function notifyTodayPrice(today) {
