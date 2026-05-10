@@ -22,6 +22,45 @@
     }).format(num);
   }
 
+  function isStandalonePwa() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
+  async function notifyTodayPrice(today) {
+    if (!today || !today.date || !isStandalonePwa() || !('Notification' in window)) return;
+
+    const notifiedKey = 'gold-price:last-notified-date';
+    if (localStorage.getItem(notifiedKey) === today.date) return;
+
+    let permission = Notification.permission;
+    if (permission === 'default') {
+      permission = await Notification.requestPermission();
+    }
+    if (permission !== 'granted') return;
+
+    const title = `Gold price update • ${today.date}`;
+    const body = `24K: ${format(today.gold_24kt)} | 22K: ${format(today.gold_22kt)} | 18K: ${format(today.gold_18kt)}`;
+    const options = {
+      body,
+      tag: 'gold-price-daily',
+      icon: '/gold-price/icons/icon-192x192.png',
+      badge: '/gold-price/icons/icon-192x192.png',
+      data: { url: '/gold-price/' },
+    };
+
+    try {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification(title, options);
+      } else {
+        new Notification(title, options);
+      }
+      localStorage.setItem(notifiedKey, today.date);
+    } catch (error) {
+      console.error('GoldPriceWidget notification error:', error);
+    }
+  }
+
   // Floating history button (bottom-right) that navigates to /history.html
   function ensureFloatingHistoryButton() {
     if (document.getElementById('gold-history-fab')) return;
@@ -116,6 +155,7 @@
 
       render(el, today, prev, dateLabel, sortedHistory);
       ensureFloatingHistoryButton();
+      await notifyTodayPrice(today);
     } catch (err) {
       const dateLabel = new Date().toISOString().slice(0, 10);
       el.innerHTML = `
