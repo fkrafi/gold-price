@@ -2,6 +2,7 @@
   const DEFAULTS = {
     historyUrl: "api/history.json",
   };
+  const NOTIFIED_DATE_KEY = "gold-price:last-notified-date";
 
   async function fetchJson(url) {
     const res = await fetch(url, { cache: "no-store" });
@@ -30,8 +31,7 @@
     if (!today || !today.date || !isStandalonePwa() || !('Notification' in window)) return;
 
     // Store notified date in YYYY-MM-DD to match today.date from history payload.
-    const notifiedKey = 'gold-price:last-notified-date';
-    if (localStorage.getItem(notifiedKey) === today.date) return;
+    if (localStorage.getItem(NOTIFIED_DATE_KEY) === today.date) return;
 
     let permission = Notification.permission;
     if (permission === 'default') {
@@ -39,7 +39,7 @@
     }
     if (permission !== 'granted') return;
 
-    const title = `Gold price update • ${today.date}`;
+    const title = `Gold price update: ${today.date}`;
     const body = `24K: ${format(today.gold_24kt)} | 22K: ${format(today.gold_22kt)} | 18K: ${format(today.gold_18kt)}`;
     const options = {
       body,
@@ -50,18 +50,13 @@
     };
 
     try {
-      let shown = false;
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
         await registration.showNotification(title, options);
-        shown = true;
       } else {
         new Notification(title, options);
-        shown = true;
       }
-      if (shown) {
-        localStorage.setItem(notifiedKey, today.date);
-      }
+      localStorage.setItem(NOTIFIED_DATE_KEY, today.date);
     } catch (error) {
       console.error('GoldPriceWidget notification error:', error);
     }
