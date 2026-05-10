@@ -29,6 +29,7 @@
   async function notifyTodayPrice(today) {
     if (!today || !today.date || !isStandalonePwa() || !('Notification' in window)) return;
 
+    // Store notified date in YYYY-MM-DD to match today.date from history payload.
     const notifiedKey = 'gold-price:last-notified-date';
     if (localStorage.getItem(notifiedKey) === today.date) return;
 
@@ -52,10 +53,11 @@
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
         await registration.showNotification(title, options);
+        localStorage.setItem(notifiedKey, today.date);
       } else {
         new Notification(title, options);
+        localStorage.setItem(notifiedKey, today.date);
       }
-      localStorage.setItem(notifiedKey, today.date);
     } catch (error) {
       console.error('GoldPriceWidget notification error:', error);
     }
