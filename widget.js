@@ -50,12 +50,16 @@
     };
 
     try {
+      let shown = false;
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
         await registration.showNotification(title, options);
-        localStorage.setItem(notifiedKey, today.date);
+        shown = true;
       } else {
         new Notification(title, options);
+        shown = true;
+      }
+      if (shown) {
         localStorage.setItem(notifiedKey, today.date);
       }
     } catch (error) {
